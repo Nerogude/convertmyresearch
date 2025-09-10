@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Habits - Kid Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">🎮 Happy Habits</h1>
+            <p style="text-align: center; margin-bottom: 30px; color: #636e72; font-size: 18px;">
+                Hi there! Select your name to see your tasks!
+            </p>
+            
+            <div id="error-message" class="error" style="display: none;"></div>
+            
+            <div id="children-loading" class="loading">Loading...</div>
+            <div id="children-container" style="display: none;">
+                <div class="child-select-grid" id="children-grid">
+                    <!-- Children will be loaded here -->
+                </div>
+                
+                <button id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 20px; display: none;">
+                    Let's Go! 🚀
+                </button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <a href="/login.html" class="btn btn-secondary">Parent Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedChildId = null;
+        
+        // Load children on page load
+        window.addEventListener('load', loadChildren);
+        
+        const avatarEmojis = {
+            'child-1': '👶',
+            'child-2': '👧',
+            'child-3': '👦',
+            'child-4': '🧒',
+            'child-5': '👨\u200d🎓',
+            'child-6': '👩\u200d🎓',
+            'child-7': '🏃\u200d♂️',
+            'child-8': '🏃\u200d♀️',
+            'child-9': '🎨',
+            'child-10': '🎮',
+            'child-11': '🎵',
+            'child-12': '⚽'
+        };
+
+        async function loadChildren() {
+            try {
+                const response = await fetch('/api/children-list');
+                const children = await response.json();
+                
+                document.getElementById('children-loading').style.display = 'none';
+                
+                if (children.length === 0) {
+                    document.getElementById('error-message').textContent = 'No children found. Ask your parent to add you first!';
+                    document.getElementById('error-message').style.display = 'block';
+                    return;
+                }
+                
+                const container = document.getElementById('children-container');
+                const grid = document.getElementById('children-grid');
+                
+                children.forEach(child => {
+                    const card = document.createElement('div');
+                    card.className = 'child-select-card';
+                    card.dataset.childId = child.id;
+                    card.innerHTML = `
+                        <div class="child-avatar">${avatarEmojis[child.avatar] || '👶'}</div>
+                        <div class="child-name">${child.name}</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Age ${child.age}</div>
+                    `;
+                    
+                    card.addEventListener('click', () => selectChild(child.id, card));
+                    grid.appendChild(card);
+                });
+                
+                container.style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('children-loading').style.display = 'none';
+                document.getElementById('error-message').textContent = 'Failed to load children. Please try again.';
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+        
+        function selectChild(childId, cardElement) {
+            // Remove previous selection
+            document.querySelectorAll('.child-select-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select current card
+            cardElement.classList.add('selected');
+            selectedChildId = childId;
+            
+            // Show login button
+            document.getElementById('login-btn').style.display = 'block';
+        }
+        
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            if (!selectedChildId) return;
+            
+            const errorDiv = document.getElementById('error-message');
+            
+            try {
+                const response = await fetch('/api/child-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ childId: selectedChildId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/child-dashboard.html';
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Something went wrong. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

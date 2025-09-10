@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#6c5ce7">
+    <title>Happy Habits - Parent Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌟 Happy Habits</div>
+            <div class="user-info">
+                <span id="welcome-message">Welcome!</span>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
+            <div class="nav-tab" onclick="showTab('children')">My Children</div>
+            <div class="nav-tab" onclick="showTab('tasks')">Tasks</div>
+            <div class="nav-tab" onclick="showTab('rewards')">🏪 Rewards</div>
+            <div class="nav-tab" onclick="showTab('bills')">💳 Bills</div>
+            <div class="nav-tab" onclick="showTab('approvals')">Approvals</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content">
+            <!-- Family Photo and Tagline -->
+            <div class="family-photo-section">
+                <div class="family-photo-container">
+                    <div id="family-photo-placeholder" class="family-photo-placeholder" onclick="triggerFamilyPhotoUpload()">
+                        📸
+                    </div>
+                    <img id="family-photo" class="family-photo" style="display: none;" onclick="triggerFamilyPhotoUpload()" />
+                </div>
+                <div id="family-tagline" class="family-tagline" onclick="editTagline()">
+                    Building great habits together! 🌟
+                </div>
+                <input type="file" id="family-photo-input" accept="image/*" style="display: none;" />
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card" id="weekly-tasks-card">
+                    <div class="stat-card-icon">📋</div>
+                    <div class="stat-card-number" id="weekly-total">0</div>
+                    <div class="stat-card-label">Tasks This Week</div>
+                </div>
+                <div class="stat-card" id="study-tasks-card">
+                    <div class="stat-card-icon">📚</div>
+                    <div class="stat-card-number" id="weekly-study">0</div>
+                    <div class="stat-card-label">Study Tasks</div>
+                </div>
+                <div class="stat-card" id="chore-tasks-card">
+                    <div class="stat-card-icon">🧹</div>
+                    <div class="stat-card-number" id="weekly-chores">0</div>
+                    <div class="stat-card-label">Chore Tasks</div>
+                </div>
+                <div class="stat-card clickable" id="pending-approvals-card" onclick="showTab('approvals')">
+                    <div class="stat-card-icon">⏳</div>
+                    <div class="stat-card-number" id="pending-count">0</div>
+                    <div class="stat-card-label">Pending Approvals</div>
+                </div>
+            </div>
+
+            <!-- Children Overview -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Your Children</h2>
+                    <button class="btn btn-primary" onclick="showTab('children'); showAddChildModal();">Add Child</button>
+                </div>
+                <div id="overview-content" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Children Tab -->
+        <div id="children-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">My Children</h2>
+                    <button class="btn btn-primary" onclick="showAddChildModal()">Add Child</button>
+                </div>
+                <div id="children-content" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks-tab" class="tab-content" style="display: none;">
+            <!-- Task List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Manage Tasks</h2>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                            <div class="task-filters">
+                                <span class="filter-label">By Type:</span>
+                                <button id="task-filter-active" class="filter-btn active" onclick="setTaskFilter('active')">
+                                    📋 Active Tasks
+                                </button>
+                                <button id="task-filter-study" class="filter-btn" onclick="setTaskFilter('study')">
+                                    📚 Study Tasks
+                                </button>
+                                <button id="task-filter-chore" class="filter-btn" onclick="setTaskFilter('chore')">
+                                    🧹 Chore Tasks
+                                </button>
+                                <button id="task-filter-all" class="filter-btn" onclick="setTaskFilter('all')">
+                                    📋 All Tasks
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" onclick="showAddTaskModal()">Create Task</button>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <div class="task-frequency-filters">
+                                <span class="filter-label">By Frequency:</span>
+                                <button id="task-filter-daily" class="filter-btn" onclick="setTaskFilter('daily')">
+                                    📅 Daily Tasks
+                                </button>
+                                <button id="task-filter-weekly" class="filter-btn" onclick="setTaskFilter('weekly')">
+                                    📆 Weekly Tasks
+                                </button>
+                                <button id="task-filter-one-time" class="filter-btn" onclick="setTaskFilter('one-time')">
+                                    🎯 One-Time Tasks
+                                </button>
+                                <button id="task-filter-due-today" class="filter-btn" onclick="setTaskFilter('due-today')">
+                                    ⚡ Due Today
+                                </button>
+                                <button id="task-filter-archived" class="filter-btn" onclick="setTaskFilter('archived')">
+                                    📦 Archived
+                                </button>
+                            </div>
+                            <div class="task-search-container" style="margin-left: auto;">
+                                <input type="text" id="task-search" placeholder="🔍 Search tasks..." onkeyup="searchTasks()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="tasks-content" class="loading">Loading...</div>
+            </div>
+            
+            <!-- Today's Task Completions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Today's Completions</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="completion-filters">
+                            <button id="completion-filter-pending" class="filter-btn active" onclick="setCompletionFilter('pending')">
+                                🟡 Pending Only
+                            </button>
+                            <button id="completion-filter-approved" class="filter-btn" onclick="setCompletionFilter('approved')">
+                                ✅ Approved Today
+                            </button>
+                            <button id="completion-filter-rejected" class="filter-btn" onclick="setCompletionFilter('rejected')">
+                                ❌ Rejected Today
+                            </button>
+                            <button id="completion-filter-all" class="filter-btn" onclick="setCompletionFilter('all')">
+                                📋 All Today
+                            </button>
+                        </div>
+                        <button class="btn btn-secondary" onclick="refreshTasksWithCompletions()">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div id="task-completions-content" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Rewards Tab -->
+        <div id="rewards-tab" class="tab-content" style="display: none;">
+            <!-- Reward Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🏪 Reward Store Management</h2>
+                    <button class="btn btn-primary" onclick="showAddRewardModal()">Add Reward</button>
+                </div>
+                <div id="rewards-content" class="loading">Loading...</div>
+            </div>
+            
+            <!-- Purchase Approvals -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📦 Purchase Requests</h2>
+                    <button class="btn btn-secondary" onclick="refreshPurchases()">🔄 Refresh</button>
+                </div>
+                <div id="purchase-approvals-content" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Bills Tab -->
+        <div id="bills-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💳 Manage Bills</h2>
+                    <button class="btn btn-primary" onclick="showCreateBillModal()">+ Create Bill</button>
+                </div>
+                <div id="bills-list" class="loading">Loading bills...</div>
+            </div>
+        </div>
+
+        <!-- Create Bill Modal -->
+        <div id="create-bill-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>💳 Create New Bill</h3>
+                    <button class="close" onclick="closeCreateBillModal()">&times;</button>
+                </div>
+                <form id="create-bill-form">
+                    <div class="form-group">
+                        <label for="bill-child">Assign to Child</label>
+                        <select id="bill-child" class="form-control" required>
+                            <option value="">Select a child...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-name">Bill Name</label>
+                        <input type="text" id="bill-name" class="form-control" placeholder="e.g., House Rent, Electricity Bill" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-description">Description (Optional)</label>
+                        <textarea id="bill-description" class="form-control" placeholder="Help your child understand what this bill is for"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-amount">Amount (Coins)</label>
+                        <input type="number" id="bill-amount" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-frequency">Frequency</label>
+                        <select id="bill-frequency" class="form-control" required>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-icon">Icon</label>
+                        <div class="emoji-grid">
+                            <div class="emoji-option selected" data-icon="🏠">🏠</div>
+                            <div class="emoji-option" data-icon="💡">💡</div>
+                            <div class="emoji-option" data-icon="💧">💧</div>
+                            <div class="emoji-option" data-icon="📱">📱</div>
+                            <div class="emoji-option" data-icon="🚗">🚗</div>
+                            <div class="emoji-option" data-icon="📺">📺</div>
+                            <div class="emoji-option" data-icon="🍔">🍔</div>
+                            <div class="emoji-option" data-icon="🏥">🏥</div>
+                            <div class="emoji-option" data-icon="🎮">🎮</div>
+                            <div class="emoji-option" data-icon="📚">📚</div>
+                            <div class="emoji-option" data-icon="🎵">🎵</div>
+                            <div class="emoji-option" data-icon="⚽">⚽</div>
+                        </div>
+                        <input type="hidden" id="bill-icon" value="🏠">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Create Bill</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Approvals Tab -->
+        <div id="approvals-tab" class="tab-content" style="display: none;">
+            <!-- Approval Stats Card -->
+            <div class="card" style="background: linear-gradient(135deg, #00b894, #00cec9); color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin-bottom: 10px;">📊 This Week's Activity</h3>
+                        <div id="approval-stats" style="display: flex; gap: 30px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold;" id="stats-approved">0</div>
+                                <div style="opacity: 0.9; font-size: 14px;">Approved</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold;" id="stats-pending">0</div>
+                                <div style="opacity: 0.9; font-size: 14px;">Pending</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold;" id="stats-total">0</div>
+                                <div style="opacity: 0.9; font-size: 14px;">Total Tasks</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 48px;">🏆</div>
+                </div>
+            </div>
+            
+            <!-- Approvals Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Task Approvals</h2>
+                    <div class="approval-filters">
+                        <button id="filter-pending" class="filter-btn active" onclick="setApprovalFilter('pending')">
+                            🟡 Pending Only
+                        </button>
+                        <button id="filter-recent" class="filter-btn" onclick="setApprovalFilter('recent')">
+                            📅 Recent (7 days)
+                        </button>
+                        <button id="filter-all" class="filter-btn" onclick="setApprovalFilter('all')">
+                            📋 All History
+                        </button>
+                    </div>
+                </div>
+                <div id="approvals-content" class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Child Modal -->
+    <div id="add-child-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Child</h3>
+                <button class="close" onclick="closeModal('add-child-modal')">&times;</button>
+            </div>
+            <form id="add-child-form">
+                <div class="form-group">
+                    <label for="child-name">Child's Name</label>
+                    <input type="text" id="child-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="child-age">Age</label>
+                    <input type="number" id="child-age" class="form-control" min="5" max="18" required>
+                </div>
+                <div class="form-group">
+                    <label>Choose Avatar</label>
+                    <div class="avatar-grid" id="avatar-grid">
+                        <div class="avatar-option selected" data-avatar="child-1">👶</div>
+                        <div class="avatar-option" data-avatar="child-2">👧</div>
+                        <div class="avatar-option" data-avatar="child-3">👦</div>
+                        <div class="avatar-option" data-avatar="child-4">🧒</div>
+                        <div class="avatar-option" data-avatar="child-5">👨‍🎓</div>
+                        <div class="avatar-option" data-avatar="child-6">👩‍🎓</div>
+                        <div class="avatar-option" data-avatar="child-7">🏃‍♂️</div>
+                        <div class="avatar-option" data-avatar="child-8">🏃‍♀️</div>
+                        <div class="avatar-option" data-avatar="child-9">🎨</div>
+                        <div class="avatar-option" data-avatar="child-10">🎮</div>
+                        <div class="avatar-option" data-avatar="child-11">🎵</div>
+                        <div class="avatar-option" data-avatar="child-12">⚽</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Add Child</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="add-task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Task</h3>
+                <button class="close" onclick="closeModal('add-task-modal')">&times;</button>
+            </div>
+            <form id="add-task-form">
+                <div class="form-group">
+                    <label for="task-child">Assign to Child</label>
+                    <select id="task-child" class="form-control" required>
+                        <option value="">Select a child...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" class="form-control" placeholder="e.g., Clean your room" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-type">Task Type</label>
+                    <select id="task-type" class="form-control" required>
+                        <option value="">Select type...</option>
+                        <option value="Chore">Chore</option>
+                        <option value="Study">Study</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-points">Points Value</label>
+                    <input type="number" id="task-points" class="form-control" min="1" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-frequency">Frequency</label>
+                    <select id="task-frequency" class="form-control" required>
+                        <option value="">Select frequency...</option>
+                        <option value="one-time">One Time</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Create Task</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="edit-task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Task</h3>
+                <button class="close" onclick="closeModal('edit-task-modal')">&times;</button>
+            </div>
+            <form id="edit-task-form">
+                <div class="form-group">
+                    <label for="edit-task-title">Task Title</label>
+                    <input type="text" id="edit-task-title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-task-type">Task Type</label>
+                    <select id="edit-task-type" class="form-control" required>
+                        <option value="Chore">Chore</option>
+                        <option value="Study">Study</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-task-points">Points Value</label>
+                    <input type="number" id="edit-task-points" class="form-control" min="1" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-task-frequency">Frequency</label>
+                    <select id="edit-task-frequency" class="form-control" required>
+                        <option value="one-time">One Time</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tagline Edit Modal -->
+    <div id="tagline-edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Family Tagline</h3>
+                <button class="close" onclick="closeModal('tagline-edit-modal')">&times;</button>
+            </div>
+            <form id="tagline-form">
+                <div class="form-group">
+                    <label for="tagline-input">Family Tagline</label>
+                    <input type="text" id="tagline-input" class="form-control" 
+                           placeholder="e.g., Building great habits together! 🌟" maxlength="100" required>
+                    <small style="color: #636e72;">Keep it positive and motivating for the kids!</small>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Save Tagline</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Reward Modal -->
+    <div id="add-reward-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="reward-modal-title">Add New Reward</h3>
+                <button class="close" onclick="closeModal('add-reward-modal')">&times;</button>
+            </div>
+            <form id="add-reward-form">
+                <div class="form-group">
+                    <label for="reward-category">Category</label>
+                    <select id="reward-category" class="form-control" required>
+                        <option value="">Select category...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reward-name">Reward Name</label>
+                    <input type="text" id="reward-name" class="form-control" 
+                           placeholder="e.g., 30 mins extra screen time" required>
+                </div>
+                <div class="form-group">
+                    <label for="reward-description">Description (optional)</label>
+                    <textarea id="reward-description" class="form-control" rows="2" 
+                              placeholder="e.g., Can be used on weekends only"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="reward-cost">Cost (coins)</label>
+                    <input type="number" id="reward-cost" class="form-control" 
+                           min="1" max="1000" placeholder="50" required>
+                </div>
+                <div class="form-group">
+                    <label for="reward-type">Type</label>
+                    <select id="reward-type" class="form-control" required>
+                        <option value="approval">Needs Parent Approval</option>
+                        <option value="instant">Instant (Auto-granted)</option>
+                        <option value="scheduled">Scheduled Activity</option>
+                    </select>
+                    <small style="color: #636e72;">Instant rewards are automatically granted when purchased</small>
+                </div>
+                <div class="form-group">
+                    <label for="reward-stock">Stock Quantity</label>
+                    <input type="number" id="reward-stock" class="form-control" 
+                           min="-1" placeholder="-1">
+                    <small style="color: #636e72;">Use -1 for unlimited stock</small>
+                </div>
+                <div class="form-group">
+                    <label for="reward-icon">Icon (emoji)</label>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="reward-icon" class="form-control" 
+                               placeholder="🎁" maxlength="2" readonly style="width: 80px; text-align: center; font-size: 24px;">
+                        <span id="icon-preview" style="font-size: 32px; padding: 8px;">🎁</span>
+                    </div>
+                    <div class="emoji-picker-grid" id="emoji-picker">
+                        <!-- Categories will be populated by JavaScript -->
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Save Reward</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/parent-dashboard.js"></script>
+</body>
+</html>
