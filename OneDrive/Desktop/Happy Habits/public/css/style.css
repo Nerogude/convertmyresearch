@@ -2120,7 +2120,7 @@ select {
     }
     
     /* Mobile modal enhancements */
-    .modal {
+    .modal.show {
         padding: 10px;
         display: flex;
         align-items: center;
@@ -2276,7 +2276,7 @@ select {
     }
     
     /* Better modal centering */
-    .modal {
+    .modal.show {
         align-items: flex-start;
         padding-top: 40px;
     }
