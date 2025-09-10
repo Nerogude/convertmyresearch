@@ -1777,13 +1777,16 @@ body {
     padding: 12px 16px;
 }
 
-/* Mobile-friendly buttons */
+/* Mobile-friendly buttons - enhanced */
 .btn {
-    min-height: 44px; /* Apple's recommended touch target size */
-    padding: 12px 20px;
+    min-height: 48px; /* Enhanced touch target size */
+    padding: 14px 24px;
     font-size: 16px; /* Prevents zoom on iOS */
-    border-radius: 10px;
+    border-radius: 12px;
     touch-action: manipulation; /* Prevents double-tap to zoom */
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-small {
@@ -1896,9 +1899,16 @@ select {
 /* Comprehensive Mobile Enhancements */
 @media (max-width: 768px) {
     /* Core mobile optimizations */
+    html {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+    
     body {
         font-size: 16px;
         line-height: 1.4;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
     
     /* Improved header for mobile */
@@ -2228,5 +2238,80 @@ select {
     .modal-content {
         width: calc(100% - 10px);
         border-radius: 10px;
+    }
+}
+
+/* Additional Mobile Optimizations */
+@media (max-width: 768px) {
+    /* Prevent horizontal scrolling */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Improve tap targets */
+    .task-checkbox {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        left: 20px;
+    }
+    
+    .checklist-style {
+        padding-left: 70px !important;
+    }
+    
+    /* Better modal centering */
+    .modal {
+        align-items: flex-start;
+        padding-top: 40px;
+    }
+    
+    /* Improved card layout */
+    .card {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+    }
+    
+    /* Better button groups */
+    .task-actions-extended {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .task-actions-extended .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Improved store layout */
+    .store-reward-item {
+        min-height: 220px;
+        padding: 24px 20px;
+    }
+    
+    /* Better family photo section */
+    .family-photo-section {
+        padding: 24px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .family-photo, .family-photo-placeholder {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 12px;
+    }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .btn {
+        -webkit-appearance: none;
+        -webkit-border-radius: 12px;
+    }
+    
+    .form-control {
+        -webkit-appearance: none;
+        -webkit-border-radius: 10px;
     }
 }
