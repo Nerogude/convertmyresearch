@@ -344,6 +344,14 @@ class Database {
         );
     }
 
+    getChildWithParentVerification(childId, parentId, callback) {
+        this.db.get(
+            'SELECT * FROM children WHERE id = ? AND parent_id = ?',
+            [childId, parentId],
+            callback
+        );
+    }
+
     updateChildBalance(childId, newBalance, callback) {
         this.db.run(
             'UPDATE children SET balance = ? WHERE id = ?',

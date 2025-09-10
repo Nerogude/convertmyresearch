@@ -103,24 +103,63 @@ app.post('/api/login', (req, res) => {
 app.post('/api/child-login', (req, res) => {
     const { childId } = req.body;
     
-    db.getChild(childId, (err, child) => {
+    // Verify parent was authenticated first
+    if (!req.session.tempParentId) {
+        return res.status(401).json({ error: 'Parent authentication required first' });
+    }
+    
+    // Verify child belongs to the authenticated parent
+    db.getChildWithParentVerification(childId, req.session.tempParentId, (err, child) => {
         if (err || !child) {
-            return res.status(400).json({ error: 'Invalid child selection' });
+            return res.status(400).json({ error: 'Invalid child selection or access denied' });
         }
         
         req.session.childId = child.id;
         req.session.childName = child.name;
+        req.session.childParentId = child.parent_id;
+        
+        // Clear temporary parent session
+        delete req.session.tempParentId;
+        
         res.json({ success: true });
     });
 });
 
-app.get('/api/children-list', (req, res) => {
-    // Get all children for child login (no auth required for this endpoint)
-    db.db.all('SELECT id, name, age, avatar FROM children ORDER BY name', (err, children) => {
-        if (err) {
-            return res.status(500).json({ error: 'Server error' });
+// Secure children list that requires parent authentication first
+app.post('/api/family-children', (req, res) => {
+    const { email, password } = req.body;
+    
+    // First verify parent credentials
+    db.getUserByEmail(email, (err, user) => {
+        if (err || !user) {
+            return res.status(400).json({ error: 'Invalid parent credentials' });
         }
-        res.json(children);
+        
+        bcrypt.compare(password, user.password, (err, match) => {
+            if (err || !match) {
+                return res.status(400).json({ error: 'Invalid parent credentials' });
+            }
+            
+            // Get children for this specific parent
+            db.getChildrenByParent(user.id, (err, children) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Server error' });
+                }
+                
+                // Store parent info in session for child login
+                req.session.tempParentId = user.id;
+                
+                // Return only safe child info
+                const safeChildren = children.map(child => ({
+                    id: child.id,
+                    name: child.name,
+                    avatar: child.avatar,
+                    age: child.age
+                }));
+                
+                res.json({ success: true, children: safeChildren });
+            });
+        });
     });
 });
 

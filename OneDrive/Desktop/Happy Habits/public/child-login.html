@@ -9,88 +9,132 @@
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <h1 class="auth-title">🎮 Happy Habits</h1>
-            <p style="text-align: center; margin-bottom: 30px; color: #636e72; font-size: 18px;">
-                Hi there! Select your name to see your tasks!
-            </p>
+            <h1 class="auth-title">🎮 Happy Habits - Child Login</h1>
             
             <div id="error-message" class="error" style="display: none;"></div>
             
-            <div id="children-loading" class="loading">Loading...</div>
-            <div id="children-container" style="display: none;">
-                <div class="child-select-grid" id="children-grid">
-                    <!-- Children will be loaded here -->
-                </div>
+            <!-- Step 1: Parent Authentication -->
+            <div id="parent-auth-step">
+                <p style="text-align: center; margin-bottom: 30px; color: #636e72;">
+                    <strong>Step 1:</strong> Parent, please enter your credentials to access your family's accounts.
+                </p>
                 
-                <button id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 20px; display: none;">
-                    Let's Go! 🚀
-                </button>
+                <form id="parent-auth-form">
+                    <div class="form-group">
+                        <label for="parent-email">Parent Email</label>
+                        <input type="email" id="parent-email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parent-password">Parent Password</label>
+                        <input type="password" id="parent-password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Verify Parent & Show Children 🔓
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Step 2: Child Selection -->
+            <div id="child-selection-step" style="display: none;">
+                <p style="text-align: center; margin-bottom: 30px; color: #636e72;">
+                    <strong>Step 2:</strong> Choose which child account to access.
+                </p>
+                
+                <div id="children-container">
+                    <div class="child-select-grid" id="children-grid">
+                        <!-- Children will be loaded here -->
+                    </div>
+                    
+                    <button id="child-login-btn" class="btn btn-primary" style="width: 100%; margin-top: 20px; display: none;">
+                        Let's Go! 🚀
+                    </button>
+                </div>
             </div>
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                <a href="/login.html" class="btn btn-secondary">Parent Login</a>
+                <a href="/login.html" class="btn btn-secondary">Parent Dashboard Instead</a>
             </div>
         </div>
     </div>
 
     <script>
         let selectedChildId = null;
-        
-        // Load children on page load
-        window.addEventListener('load', loadChildren);
+        let familyChildren = [];
         
         const avatarEmojis = {
             'child-1': '👶',
             'child-2': '👧',
             'child-3': '👦',
             'child-4': '🧒',
-            'child-5': '👨\u200d🎓',
-            'child-6': '👩\u200d🎓',
-            'child-7': '🏃\u200d♂️',
-            'child-8': '🏃\u200d♀️',
+            'child-5': '👨‍🎓',
+            'child-6': '👩‍🎓',
+            'child-7': '🏃‍♂️',
+            'child-8': '🏃‍♀️',
             'child-9': '🎨',
             'child-10': '🎮',
             'child-11': '🎵',
             'child-12': '⚽'
         };
 
-        async function loadChildren() {
+        // Step 1: Parent Authentication
+        document.getElementById('parent-auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('parent-email').value;
+            const password = document.getElementById('parent-password').value;
+            const errorDiv = document.getElementById('error-message');
+            
             try {
-                const response = await fetch('/api/children-list');
-                const children = await response.json();
-                
-                document.getElementById('children-loading').style.display = 'none';
-                
-                if (children.length === 0) {
-                    document.getElementById('error-message').textContent = 'No children found. Ask your parent to add you first!';
-                    document.getElementById('error-message').style.display = 'block';
-                    return;
-                }
-                
-                const container = document.getElementById('children-container');
-                const grid = document.getElementById('children-grid');
-                
-                children.forEach(child => {
-                    const card = document.createElement('div');
-                    card.className = 'child-select-card';
-                    card.dataset.childId = child.id;
-                    card.innerHTML = `
-                        <div class="child-avatar">${avatarEmojis[child.avatar] || '👶'}</div>
-                        <div class="child-name">${child.name}</div>
-                        <div style="font-size: 14px; opacity: 0.9;">Age ${child.age}</div>
-                    `;
-                    
-                    card.addEventListener('click', () => selectChild(child.id, card));
-                    grid.appendChild(card);
+                const response = await fetch('/api/family-children', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
                 });
                 
-                container.style.display = 'block';
+                const data = await response.json();
                 
+                if (data.success) {
+                    familyChildren = data.children;
+                    showChildSelection();
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
             } catch (error) {
-                document.getElementById('children-loading').style.display = 'none';
-                document.getElementById('error-message').textContent = 'Failed to load children. Please try again.';
-                document.getElementById('error-message').style.display = 'block';
+                errorDiv.textContent = 'Something went wrong. Please try again.';
+                errorDiv.style.display = 'block';
             }
+        });
+
+        function showChildSelection() {
+            document.getElementById('parent-auth-step').style.display = 'none';
+            document.getElementById('child-selection-step').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            
+            if (familyChildren.length === 0) {
+                document.getElementById('error-message').textContent = 'No children found. Add children in the parent dashboard first!';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            const grid = document.getElementById('children-grid');
+            grid.innerHTML = ''; // Clear any existing content
+            
+            familyChildren.forEach(child => {
+                const card = document.createElement('div');
+                card.className = 'child-select-card';
+                card.dataset.childId = child.id;
+                card.innerHTML = `
+                    <div class="child-avatar">${avatarEmojis[child.avatar] || '👶'}</div>
+                    <div class="child-name">${child.name}</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Age ${child.age}</div>
+                `;
+                
+                card.addEventListener('click', () => selectChild(child.id, card));
+                grid.appendChild(card);
+            });
         }
         
         function selectChild(childId, cardElement) {
@@ -104,10 +148,11 @@
             selectedChildId = childId;
             
             // Show login button
-            document.getElementById('login-btn').style.display = 'block';
+            document.getElementById('child-login-btn').style.display = 'block';
         }
         
-        document.getElementById('login-btn').addEventListener('click', async () => {
+        // Step 2: Child Login
+        document.getElementById('child-login-btn').addEventListener('click', async () => {
             if (!selectedChildId) return;
             
             const errorDiv = document.getElementById('error-message');
