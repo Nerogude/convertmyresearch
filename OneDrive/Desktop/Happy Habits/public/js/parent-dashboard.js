@@ -1726,10 +1726,23 @@ function renderPurchases() {
     `;
 }
 
-function showAddRewardModal() {
+async function showAddRewardModal() {
     editingRewardId = null;
     document.getElementById('reward-modal-title').textContent = 'Add New Reward';
     document.getElementById('add-reward-form').reset();
+    
+    // Ensure categories are loaded before showing the modal
+    if (!categories || categories.length === 0) {
+        try {
+            const categoriesResponse = await fetch('/api/reward-categories');
+            categories = await categoriesResponse.json();
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            alert('Error loading reward categories. Please try again.');
+            return;
+        }
+    }
+    
     updateRewardCategoryOptions();
     
     // Reset emoji picker to default
