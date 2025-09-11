@@ -13,7 +13,7 @@ let bills = [];
 let editingBillId = null;
 let currentApprovalFilter = 'pending'; // pending, recent, all
 let currentCompletionFilter = 'pending'; // pending, approved, rejected, all
-let currentTaskFilter = 'active'; // active, study, chore, all
+let currentTaskFilter = 'due-today'; // due-today, active, study, chore, all
 let approvalStats = {};
 let subscriptionStatus = {};
 
@@ -105,6 +105,34 @@ function showTab(tabName) {
         loadPurchases();
     } else if (tabName === 'bills') {
         loadBills();
+    }
+}
+
+// Progressive Disclosure Functions
+function toggleAdvancedFilters() {
+    const advancedFilters = document.getElementById('advanced-filters');
+    const moreFiltersBtn = document.getElementById('more-filters-btn');
+    
+    if (advancedFilters.style.display === 'none') {
+        advancedFilters.style.display = 'block';
+        moreFiltersBtn.textContent = '⚙️ Hide Filters';
+        moreFiltersBtn.style.background = '#e17055';
+        moreFiltersBtn.style.color = 'white';
+    } else {
+        advancedFilters.style.display = 'none';
+        moreFiltersBtn.textContent = '⚙️ More Filters';
+        moreFiltersBtn.style.background = '#f8f9fa';
+        moreFiltersBtn.style.color = 'inherit';
+    }
+}
+
+function checkBillsVisibility() {
+    const billsTab = document.getElementById('bills-tab');
+    // Show Bills tab if user has any bills or is premium
+    if (bills.length > 0 || (subscriptionStatus && subscriptionStatus.isPremium)) {
+        billsTab.style.display = 'block';
+    } else {
+        billsTab.style.display = 'none';
     }
 }
 
@@ -1939,6 +1967,7 @@ async function loadBills() {
         const response = await fetch('/api/bills');
         bills = await response.json();
         renderBills();
+        checkBillsVisibility();
     } catch (error) {
         console.error('Error loading bills:', error);
         document.getElementById('bills-list').innerHTML = `
@@ -1946,6 +1975,7 @@ async function loadBills() {
                 <p>Unable to load bills. Please try refreshing.</p>
             </div>
         `;
+        checkBillsVisibility();
     }
 }
 

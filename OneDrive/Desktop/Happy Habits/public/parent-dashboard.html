@@ -26,7 +26,7 @@
             <div class="nav-tab" onclick="showTab('children')">My Children</div>
             <div class="nav-tab" onclick="showTab('tasks')">Tasks</div>
             <div class="nav-tab" onclick="showTab('rewards')">🏪 Rewards</div>
-            <div class="nav-tab" onclick="showTab('bills')">💳 Bills</div>
+            <div class="nav-tab" id="bills-tab" onclick="showTab('bills')" style="display: none;">💳 Bills</div>
             <div class="nav-tab" onclick="showTab('approvals')">Approvals</div>
         </div>
 
@@ -46,27 +46,30 @@
                 <input type="file" id="family-photo-input" accept="image/*" style="display: none;" />
             </div>
 
-            <!-- Quick Stats -->
+            <!-- Quick Stats - Focused View -->
             <div class="stats-grid" id="stats-grid">
-                <div class="stat-card" id="weekly-tasks-card">
-                    <div class="stat-card-icon">📋</div>
+                <!-- Most Important: Pending Approvals -->
+                <div class="stat-card clickable" id="pending-approvals-card" onclick="showTab('approvals')" style="order: 1; border: 2px solid #e17055;">
+                    <div class="stat-card-icon">⏳</div>
+                    <div class="stat-card-number" id="pending-count">0</div>
+                    <div class="stat-card-label">Need Your Attention</div>
+                </div>
+                <!-- Today's Progress -->
+                <div class="stat-card" id="weekly-tasks-card" style="order: 2;">
+                    <div class="stat-card-icon">🏆</div>
                     <div class="stat-card-number" id="weekly-total">0</div>
                     <div class="stat-card-label">Tasks This Week</div>
                 </div>
-                <div class="stat-card" id="study-tasks-card">
+                <!-- Secondary Stats - Less Prominent -->
+                <div class="stat-card" id="study-tasks-card" style="order: 3; opacity: 0.8;">
                     <div class="stat-card-icon">📚</div>
                     <div class="stat-card-number" id="weekly-study">0</div>
                     <div class="stat-card-label">Study Tasks</div>
                 </div>
-                <div class="stat-card" id="chore-tasks-card">
+                <div class="stat-card" id="chore-tasks-card" style="order: 4; opacity: 0.8;">
                     <div class="stat-card-icon">🧹</div>
                     <div class="stat-card-number" id="weekly-chores">0</div>
                     <div class="stat-card-label">Chore Tasks</div>
-                </div>
-                <div class="stat-card clickable" id="pending-approvals-card" onclick="showTab('approvals')">
-                    <div class="stat-card-icon">⏳</div>
-                    <div class="stat-card-number" id="pending-count">0</div>
-                    <div class="stat-card-label">Pending Approvals</div>
                 </div>
             </div>
 
@@ -98,45 +101,57 @@
                 <div class="card-header">
                     <h2 class="card-title">Manage Tasks</h2>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Simple View - Essential Filters Only -->
                         <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
                             <div class="task-filters">
-                                <span class="filter-label">By Type:</span>
-                                <button id="task-filter-active" class="filter-btn active" onclick="setTaskFilter('active')">
-                                    📋 Active Tasks
+                                <button id="task-filter-due-today" class="filter-btn active" onclick="setTaskFilter('due-today')">
+                                    ⚡ Due Today
                                 </button>
-                                <button id="task-filter-study" class="filter-btn" onclick="setTaskFilter('study')">
-                                    📚 Study Tasks
+                                <button id="task-filter-active" class="filter-btn" onclick="setTaskFilter('active')">
+                                    📋 All Active
                                 </button>
-                                <button id="task-filter-chore" class="filter-btn" onclick="setTaskFilter('chore')">
-                                    🧹 Chore Tasks
-                                </button>
-                                <button id="task-filter-all" class="filter-btn" onclick="setTaskFilter('all')">
-                                    📋 All Tasks
+                                <button id="more-filters-btn" class="filter-btn" onclick="toggleAdvancedFilters()" style="background: #f8f9fa; border: 2px dashed #dee2e6;">
+                                    ⚙️ More Filters
                                 </button>
                             </div>
                             <button class="btn btn-primary" onclick="showAddTaskModal()">Create Task</button>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <div class="task-frequency-filters">
-                                <span class="filter-label">By Frequency:</span>
-                                <button id="task-filter-daily" class="filter-btn" onclick="setTaskFilter('daily')">
-                                    📅 Daily Tasks
-                                </button>
-                                <button id="task-filter-weekly" class="filter-btn" onclick="setTaskFilter('weekly')">
-                                    📆 Weekly Tasks
-                                </button>
-                                <button id="task-filter-one-time" class="filter-btn" onclick="setTaskFilter('one-time')">
-                                    🎯 One-Time Tasks
-                                </button>
-                                <button id="task-filter-due-today" class="filter-btn" onclick="setTaskFilter('due-today')">
-                                    ⚡ Due Today
-                                </button>
-                                <button id="task-filter-archived" class="filter-btn" onclick="setTaskFilter('archived')">
-                                    📦 Archived
-                                </button>
+                        
+                        <!-- Advanced Filters - Hidden by Default -->
+                        <div id="advanced-filters" style="display: none;">
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <div class="task-filters">
+                                    <span class="filter-label">By Type:</span>
+                                    <button id="task-filter-study" class="filter-btn" onclick="setTaskFilter('study')">
+                                        📚 Study Tasks
+                                    </button>
+                                    <button id="task-filter-chore" class="filter-btn" onclick="setTaskFilter('chore')">
+                                        🧹 Chore Tasks
+                                    </button>
+                                    <button id="task-filter-all" class="filter-btn" onclick="setTaskFilter('all')">
+                                        📋 All Tasks
+                                    </button>
+                                </div>
                             </div>
-                            <div class="task-search-container" style="margin-left: auto;">
-                                <input type="text" id="task-search" placeholder="🔍 Search tasks..." onkeyup="searchTasks()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div class="task-frequency-filters">
+                                    <span class="filter-label">By Frequency:</span>
+                                    <button id="task-filter-daily" class="filter-btn" onclick="setTaskFilter('daily')">
+                                        📅 Daily Tasks
+                                    </button>
+                                    <button id="task-filter-weekly" class="filter-btn" onclick="setTaskFilter('weekly')">
+                                        📆 Weekly Tasks
+                                    </button>
+                                    <button id="task-filter-one-time" class="filter-btn" onclick="setTaskFilter('one-time')">
+                                        🎯 One-Time Tasks
+                                    </button>
+                                    <button id="task-filter-archived" class="filter-btn" onclick="setTaskFilter('archived')">
+                                        📦 Archived
+                                    </button>
+                                </div>
+                                <div class="task-search-container" style="margin-left: auto;">
+                                    <input type="text" id="task-search" placeholder="🔍 Search tasks..." onkeyup="searchTasks()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
                             </div>
                         </div>
                     </div>
