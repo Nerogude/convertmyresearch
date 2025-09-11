@@ -49,7 +49,7 @@ function requireChildAuth(req, res, next) {
 
 // Freemium limits
 const FREEMIUM_LIMITS = {
-    children: 2,
+    children: 1,
     tasks: 5,
     rewards: 3,
     bills: 2
