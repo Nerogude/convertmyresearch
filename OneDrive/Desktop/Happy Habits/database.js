@@ -1264,6 +1264,27 @@ class Database {
         );
     }
 
+    // Analytics methods
+    getUserSignupStats(callback) {
+        this.db.all(`
+            SELECT 
+                COUNT(*) as total_users,
+                COUNT(CASE WHEN created_at >= date('now', '-1 day') THEN 1 END) as signups_today,
+                COUNT(CASE WHEN created_at >= date('now', '-7 days') THEN 1 END) as signups_week,
+                COUNT(CASE WHEN created_at >= date('now', '-30 days') THEN 1 END) as signups_month
+            FROM users
+        `, callback);
+    }
+
+    getRecentSignups(limit = 10, callback) {
+        this.db.all(`
+            SELECT name, email, created_at 
+            FROM users 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        `, [limit], callback);
+    }
+
     close() {
         this.db.close();
     }

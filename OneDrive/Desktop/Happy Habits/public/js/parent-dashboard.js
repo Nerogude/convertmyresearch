@@ -61,6 +61,7 @@ window.addEventListener('load', () => {
     setupEmojiPicker();
     loadBills();
     loadSubscriptionStatus();
+    loadAnalytics();
 });
 
 // Tab management
@@ -2338,3 +2339,53 @@ window.addEventListener('click', (e) => {
         e.target.classList.remove('show');
     }
 });
+
+// ==================== ANALYTICS FUNCTIONS ====================
+
+async function loadAnalytics() {
+    try {
+        const response = await fetch('/api/signup-stats');
+        const stats = await response.json();
+        renderAnalytics(stats);
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+        document.getElementById('analytics-content').innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <p>Unable to load analytics data</p>
+            </div>
+        `;
+    }
+}
+
+function renderAnalytics(stats) {
+    const container = document.getElementById('analytics-content');
+    
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: bold;">${stats.total_users}</div>
+                <div style="opacity: 0.9; font-size: 14px;">Total Users</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: bold;">${stats.signups_today}</div>
+                <div style="opacity: 0.9; font-size: 14px;">Today</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: bold;">${stats.signups_week}</div>
+                <div style="opacity: 0.9; font-size: 14px;">This Week</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: bold;">${stats.signups_month}</div>
+                <div style="opacity: 0.9; font-size: 14px;">This Month</div>
+            </div>
+        </div>
+        <div style="text-align: center; opacity: 0.8; font-size: 12px;">
+            🎉 Great job sharing your app with friends! ${stats.signups_week > 0 ? 'You got ' + stats.signups_week + ' new signups this week!' : 'Keep spreading the word!'}
+        </div>
+    `;
+}
+
+async function refreshAnalytics() {
+    document.getElementById('analytics-content').innerHTML = '<div class="loading">Refreshing...</div>';
+    await loadAnalytics();
+}

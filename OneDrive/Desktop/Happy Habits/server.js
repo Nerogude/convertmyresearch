@@ -714,6 +714,35 @@ app.get('/api/pending-count', requireAuth, (req, res) => {
     });
 });
 
+// ==================== ANALYTICS API ====================
+
+// Get signup statistics
+app.get('/api/signup-stats', requireAuth, (req, res) => {
+    db.getUserSignupStats((err, stats) => {
+        if (err) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json(stats[0] || { total_users: 0, signups_today: 0, signups_week: 0, signups_month: 0 });
+    });
+});
+
+// Get recent signups (for admin/developer view)
+app.get('/api/recent-signups', requireAuth, (req, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    db.getRecentSignups(limit, (err, signups) => {
+        if (err) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        // Remove sensitive email info for privacy
+        const sanitizedSignups = signups.map(signup => ({
+            name: signup.name,
+            email: signup.email.replace(/(.{1}).*@/, '$1***@'), // Mask email
+            created_at: signup.created_at
+        }));
+        res.json(sanitizedSignups);
+    });
+});
+
 // ==================== REWARD MARKETPLACE API ====================
 
 // Reward Categories
