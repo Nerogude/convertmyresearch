@@ -2139,14 +2139,21 @@ async function loadSubscriptionStatus() {
         const response = await fetch('/api/subscription-status');
         subscriptionStatus = await response.json();
         
+        console.log('Subscription status loaded:', subscriptionStatus); // Debug log
+        
         // Update UI with subscription info
         updateSubscriptionUI();
     } catch (error) {
         console.error('Error loading subscription status:', error);
+        // Assume free user if error
+        subscriptionStatus = { isPremium: false };
+        updateSubscriptionUI();
     }
 }
 
 function updateSubscriptionUI() {
+    console.log('Updating subscription UI. isPremium:', subscriptionStatus.isPremium); // Debug log
+    
     // Add upgrade button to header if not premium
     if (!subscriptionStatus.isPremium) {
         const userInfo = document.querySelector('.user-info');
@@ -2165,12 +2172,21 @@ function updateSubscriptionUI() {
         
         // Show usage warnings if close to limits
         showUsageWarnings();
+    } else {
+        console.log('User is premium, not applying teasers');
     }
 }
 
 function makePremiumTabsTeaser() {
-    // Add premium badge to Bills tab
-    const billsTab = document.querySelector('[onclick="showTab(\'bills\')"]');
+    console.log('Making premium tabs teaser'); // Debug log
+    
+    // Wait a bit for DOM to be ready
+    setTimeout(() => {
+        // Add premium badge to Bills tab
+        const billsTab = document.querySelector('[onclick="showTab(\'bills\')"]');
+        console.log('Bills tab found:', billsTab); // Debug log
+        console.log('Current onclick attribute:', billsTab ? billsTab.getAttribute('onclick') : 'null'); // Debug log
+    
     if (billsTab && !billsTab.querySelector('.premium-badge')) {
         // Add premium badge
         const badge = document.createElement('span');
@@ -2190,6 +2206,7 @@ function makePremiumTabsTeaser() {
         // Replace click handler with premium prompt
         billsTab.setAttribute('onclick', 'showPremiumPrompt("Bills & Allowance Management")');
         billsTab.style.opacity = '0.7';
+        console.log('Bills tab onclick updated to:', billsTab.getAttribute('onclick')); // Debug log
     }
     
     // Add premium teaser to photo upload
@@ -2226,6 +2243,7 @@ function makePremiumTabsTeaser() {
         familyPhoto.setAttribute('onclick', 'showPremiumPrompt("Family Photo Uploads")');
         familyPhoto.style.opacity = '0.7';
     }
+    }, 100); // End setTimeout
 }
 
 function showUsageWarnings() {
