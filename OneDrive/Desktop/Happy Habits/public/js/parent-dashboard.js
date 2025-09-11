@@ -2160,8 +2160,71 @@ function updateSubscriptionUI() {
             userInfo.appendChild(upgradeBtn);
         }
         
+        // Make premium tabs visible but locked with teaser
+        makePremiumTabsTeaser();
+        
         // Show usage warnings if close to limits
         showUsageWarnings();
+    }
+}
+
+function makePremiumTabsTeaser() {
+    // Add premium badge to Bills tab
+    const billsTab = document.querySelector('[onclick="showTab(\'bills\')"]');
+    if (billsTab && !billsTab.querySelector('.premium-badge')) {
+        // Add premium badge
+        const badge = document.createElement('span');
+        badge.className = 'premium-badge';
+        badge.innerHTML = '⭐';
+        badge.style.cssText = `
+            background: #fdcb6e;
+            color: #2d3436;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-left: 5px;
+            font-weight: bold;
+        `;
+        billsTab.appendChild(badge);
+        
+        // Replace click handler with premium prompt
+        billsTab.setAttribute('onclick', 'showPremiumPrompt("Bills & Allowance Management")');
+        billsTab.style.opacity = '0.7';
+    }
+    
+    // Add premium teaser to photo upload
+    const photoPlaceholder = document.getElementById('family-photo-placeholder');
+    const familyPhoto = document.getElementById('family-photo');
+    
+    if (photoPlaceholder) {
+        // Replace photo upload with premium prompt
+        photoPlaceholder.setAttribute('onclick', 'showPremiumPrompt("Family Photo Uploads")');
+        photoPlaceholder.style.cssText += '; opacity: 0.7; cursor: pointer; position: relative;';
+        
+        // Add premium badge to photo area
+        if (!photoPlaceholder.querySelector('.photo-premium-badge')) {
+            const photoBadge = document.createElement('div');
+            photoBadge.className = 'photo-premium-badge';
+            photoBadge.innerHTML = '⭐ PREMIUM';
+            photoBadge.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background: #fdcb6e;
+                color: #2d3436;
+                font-size: 8px;
+                padding: 2px 5px;
+                border-radius: 8px;
+                font-weight: bold;
+            `;
+            photoPlaceholder.style.position = 'relative';
+            photoPlaceholder.appendChild(photoBadge);
+        }
+    }
+    
+    if (familyPhoto) {
+        familyPhoto.setAttribute('onclick', 'showPremiumPrompt("Family Photo Uploads")');
+        familyPhoto.style.opacity = '0.7';
     }
 }
 
@@ -2216,6 +2279,14 @@ function handleUpgradeResponse(response) {
         return true; // Indicates upgrade prompt was shown
     }
     return false; // No upgrade needed
+}
+
+function showPremiumPrompt(featureName) {
+    const message = `🌟 ${featureName} is a Premium Feature!\n\nThis powerful feature is available with our Premium plan:\n• Unlimited children, tasks & rewards\n• Advanced bills & allowance management\n• Photo uploads & priority support\n• Only $9.99/month\n\nWould you like to upgrade now?`;
+    
+    if (confirm(message)) {
+        window.location.href = '/upgrade.html';
+    }
 }
 
 // Override existing functions to handle upgrade prompts
