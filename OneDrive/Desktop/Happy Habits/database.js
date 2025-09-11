@@ -18,9 +18,17 @@ class Database {
                     name TEXT NOT NULL,
                     family_photo TEXT DEFAULT 'default-family.jpg',
                     tagline TEXT DEFAULT 'Building great habits together! 🌟',
+                    subscription_status TEXT DEFAULT 'free',
+                    subscription_end_date TEXT,
+                    trial_end_date TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             `);
+            
+            // Add subscription columns to existing users
+            this.db.run(`ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT 'free'`, () => {});
+            this.db.run(`ALTER TABLE users ADD COLUMN subscription_end_date TEXT`, () => {});
+            this.db.run(`ALTER TABLE users ADD COLUMN trial_end_date TEXT`, () => {});
 
             // Children table
             this.db.run(`
@@ -315,6 +323,60 @@ class Database {
         this.db.get(
             'SELECT * FROM users WHERE id = ?',
             [userId],
+            callback
+        );
+    }
+
+    // Subscription methods
+    updateUserSubscription(userId, status, endDate, callback) {
+        this.db.run(
+            'UPDATE users SET subscription_status = ?, subscription_end_date = ? WHERE id = ?',
+            [status, endDate, userId],
+            callback
+        );
+    }
+
+    getUserWithSubscription(userId, callback) {
+        this.db.get(
+            'SELECT *, subscription_status, subscription_end_date, trial_end_date FROM users WHERE id = ?',
+            [userId],
+            (err, user) => {
+                if (err || !user) return callback(err, user);
+                
+                // Check if subscription is active
+                const now = new Date().toISOString();
+                const isSubscribed = user.subscription_status === 'premium' && 
+                                   (!user.subscription_end_date || user.subscription_end_date > now);
+                const isTrialActive = user.trial_end_date && user.trial_end_date > now;
+                
+                user.isPremium = isSubscribed || isTrialActive;
+                user.isTrialActive = isTrialActive;
+                callback(null, user);
+            }
+        );
+    }
+
+    // Resource counting for limits
+    countChildrenByParent(parentId, callback) {
+        this.db.get(
+            'SELECT COUNT(*) as count FROM children WHERE parent_id = ?',
+            [parentId],
+            callback
+        );
+    }
+
+    countTasksByParent(parentId, callback) {
+        this.db.get(
+            'SELECT COUNT(*) as count FROM tasks WHERE parent_id = ?',
+            [parentId],
+            callback
+        );
+    }
+
+    countRewardsByParent(parentId, callback) {
+        this.db.get(
+            'SELECT COUNT(*) as count FROM rewards WHERE parent_id = ?',
+            [parentId],
             callback
         );
     }

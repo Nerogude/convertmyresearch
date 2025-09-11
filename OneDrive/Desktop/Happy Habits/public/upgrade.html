@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - Happy Habits</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px;">
+            <h1 class="auth-title">🚀 Upgrade to Premium</h1>
+            <p style="text-align: center; margin-bottom: 30px; color: #636e72;">
+                Unlock unlimited access to all Happy Habits features!
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <!-- Free Plan -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; border: 2px solid #ddd;">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: #636e72;">Free Plan</h3>
+                    <div style="text-align: center; font-size: 32px; font-weight: bold; margin-bottom: 20px;">$0</div>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Up to 2 children
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Up to 5 tasks
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Up to 3 rewards
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">❌</span> Bills & allowance
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">❌</span> Photo uploads
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Premium Plan -->
+                <div style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); padding: 25px; border-radius: 15px; color: white; position: relative; border: 2px solid #6c5ce7;">
+                    <div style="position: absolute; top: -10px; right: 20px; background: #fdcb6e; color: #2d3436; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                        RECOMMENDED
+                    </div>
+                    <h3 style="text-align: center; margin-bottom: 20px;">Premium Plan</h3>
+                    <div style="text-align: center; font-size: 32px; font-weight: bold; margin-bottom: 10px;">$9.99</div>
+                    <div style="text-align: center; font-size: 14px; opacity: 0.9; margin-bottom: 20px;">/month</div>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Unlimited children
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Unlimited tasks
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Unlimited rewards
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Bills & allowance management
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Photo uploads
+                        </li>
+                        <li style="padding: 8px 0; display: flex; align-items: center;">
+                            <span style="margin-right: 10px;">✅</span> Priority support
+                        </li>
+                    </ul>
+                    
+                    <button class="btn" style="width: 100%; margin-top: 20px; background: white; color: #6c5ce7; font-weight: bold;" onclick="alert('Payment integration coming soon! Contact support for early access.')">
+                        Upgrade Now 🚀
+                    </button>
+                </div>
+            </div>
+            
+            <div id="current-usage" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px;">Your Current Usage</h4>
+                <div id="usage-stats">Loading...</div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="/parent-dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load current usage stats
+        async function loadUsageStats() {
+            try {
+                const response = await fetch('/api/subscription-status');
+                const data = await response.json();
+                
+                const usageDiv = document.getElementById('usage-stats');
+                usageDiv.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${data.usage.children >= data.limits.children ? '#e17055' : '#6c5ce7'};">
+                                ${data.usage.children}/${data.limits.children}
+                            </div>
+                            <div style="font-size: 14px; color: #636e72;">Children</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${data.usage.tasks >= data.limits.tasks ? '#e17055' : '#6c5ce7'};">
+                                ${data.usage.tasks}/${data.limits.tasks}
+                            </div>
+                            <div style="font-size: 14px; color: #636e72;">Tasks</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${data.usage.rewards >= data.limits.rewards ? '#e17055' : '#6c5ce7'};">
+                                ${data.usage.rewards}/${data.limits.rewards}
+                            </div>
+                            <div style="font-size: 14px; color: #636e72;">Rewards</div>
+                        </div>
+                    </div>
+                `;
+                
+                if (data.isPremium) {
+                    document.querySelector('.auth-title').innerHTML = '⭐ Premium Account';
+                    usageDiv.innerHTML = '<div style="text-align: center; color: #00b894; font-weight: bold;">🎉 You have unlimited access to all features!</div>';
+                }
+            } catch (error) {
+                console.error('Error loading usage stats:', error);
+            }
+        }
+        
+        window.addEventListener('load', loadUsageStats);
+    </script>
+</body>
+</html>

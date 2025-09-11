@@ -15,6 +15,7 @@ let currentApprovalFilter = 'pending'; // pending, recent, all
 let currentCompletionFilter = 'pending'; // pending, approved, rejected, all
 let currentTaskFilter = 'active'; // active, study, chore, all
 let approvalStats = {};
+let subscriptionStatus = {};
 
 // Quick comment suggestions
 const quickComments = [
@@ -59,6 +60,7 @@ window.addEventListener('load', () => {
     setupFamilyPhotoUpload();
     setupEmojiPicker();
     loadBills();
+    loadSubscriptionStatus();
 });
 
 // Tab management
@@ -2130,6 +2132,96 @@ async function deleteBill(billId) {
         alert('Something went wrong. Please try again.');
     }
 }
+
+// Subscription Management
+async function loadSubscriptionStatus() {
+    try {
+        const response = await fetch('/api/subscription-status');
+        subscriptionStatus = await response.json();
+        
+        // Update UI with subscription info
+        updateSubscriptionUI();
+    } catch (error) {
+        console.error('Error loading subscription status:', error);
+    }
+}
+
+function updateSubscriptionUI() {
+    // Add upgrade button to header if not premium
+    if (!subscriptionStatus.isPremium) {
+        const userInfo = document.querySelector('.user-info');
+        if (userInfo && !document.getElementById('upgrade-btn')) {
+            const upgradeBtn = document.createElement('a');
+            upgradeBtn.id = 'upgrade-btn';
+            upgradeBtn.href = '/upgrade.html';
+            upgradeBtn.className = 'btn btn-primary';
+            upgradeBtn.style.background = 'linear-gradient(135deg, #fdcb6e, #e17055)';
+            upgradeBtn.innerHTML = '⭐ Upgrade';
+            userInfo.appendChild(upgradeBtn);
+        }
+        
+        // Show usage warnings if close to limits
+        showUsageWarnings();
+    }
+}
+
+function showUsageWarnings() {
+    const { usage, limits } = subscriptionStatus;
+    
+    // Show warnings for resources at 80% of limit
+    Object.keys(usage).forEach(resource => {
+        const current = usage[resource];
+        const limit = limits[resource];
+        
+        if (current >= limit * 0.8) {
+            const container = document.getElementById(`${resource}-content`) || document.querySelector('.container');
+            if (container && !container.querySelector(`.${resource}-warning`)) {
+                const warning = document.createElement('div');
+                warning.className = `${resource}-warning`;
+                warning.style.cssText = `
+                    background: linear-gradient(135deg, #fdcb6e, #e17055);
+                    color: white;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-bottom: 15px;
+                    text-align: center;
+                `;
+                
+                if (current >= limit) {
+                    warning.innerHTML = `
+                        <strong>⚠️ Free Plan Limit Reached</strong><br>
+                        You've reached the limit of ${limit} ${resource}. 
+                        <a href="/upgrade.html" style="color: white; text-decoration: underline;">Upgrade to Premium</a> for unlimited access!
+                    `;
+                } else {
+                    warning.innerHTML = `
+                        <strong>📊 Approaching Limit</strong><br>
+                        You're using ${current}/${limit} ${resource}. 
+                        <a href="/upgrade.html" style="color: white; text-decoration: underline;">Upgrade to Premium</a> for unlimited access!
+                    `;
+                }
+                
+                container.prepend(warning);
+            }
+        }
+    });
+}
+
+function handleUpgradeResponse(response) {
+    if (response.status === 402 && response.upgrade) {
+        // Show upgrade prompt
+        if (confirm(response.message + '\n\nWould you like to upgrade now?')) {
+            window.location.href = '/upgrade.html';
+        }
+        return true; // Indicates upgrade prompt was shown
+    }
+    return false; // No upgrade needed
+}
+
+// Override existing functions to handle upgrade prompts
+const originalCreateChild = window.createChild || function() {};
+const originalCreateTask = window.createTask || function() {};
+const originalCreateReward = window.createReward || function() {};
 
 // Close modals when clicking outside
 window.addEventListener('click', (e) => {

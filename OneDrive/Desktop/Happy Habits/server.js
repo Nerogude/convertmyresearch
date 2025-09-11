@@ -47,6 +47,74 @@ function requireChildAuth(req, res, next) {
     }
 }
 
+// Freemium limits
+const FREEMIUM_LIMITS = {
+    children: 2,
+    tasks: 5,
+    rewards: 3,
+    bills: 2
+};
+
+function requirePremiumFeature(req, res, next) {
+    db.getUserWithSubscription(req.session.userId, (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        
+        if (user.isPremium) {
+            next();
+        } else {
+            res.status(402).json({ 
+                error: 'Premium feature required', 
+                upgrade: true,
+                message: 'This feature requires a premium subscription. Upgrade to unlock unlimited access!' 
+            });
+        }
+    });
+}
+
+function checkResourceLimit(resourceType) {
+    return (req, res, next) => {
+        db.getUserWithSubscription(req.session.userId, (err, user) => {
+            if (err) {
+                return res.status(500).json({ error: 'Server error' });
+            }
+            
+            if (user.isPremium) {
+                return next(); // No limits for premium users
+            }
+            
+            // Check current count against limit
+            const countFunction = {
+                'children': 'countChildrenByParent',
+                'tasks': 'countTasksByParent', 
+                'rewards': 'countRewardsByParent'
+            }[resourceType];
+            
+            db[countFunction](req.session.userId, (err, result) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Server error' });
+                }
+                
+                const currentCount = result.count;
+                const limit = FREEMIUM_LIMITS[resourceType];
+                
+                if (currentCount >= limit) {
+                    res.status(402).json({ 
+                        error: `Free plan limit reached`, 
+                        upgrade: true,
+                        message: `You've reached the free plan limit of ${limit} ${resourceType}. Upgrade to premium for unlimited access!`,
+                        currentCount,
+                        limit
+                    });
+                } else {
+                    next();
+                }
+            });
+        });
+    };
+}
+
 // Routes
 
 // Home page
@@ -169,8 +237,38 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true });
 });
 
+// Subscription management
+app.get('/api/subscription-status', requireAuth, (req, res) => {
+    db.getUserWithSubscription(req.session.userId, (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        
+        // Get current usage counts
+        Promise.all([
+            new Promise(resolve => db.countChildrenByParent(req.session.userId, (err, result) => resolve(result?.count || 0))),
+            new Promise(resolve => db.countTasksByParent(req.session.userId, (err, result) => resolve(result?.count || 0))),
+            new Promise(resolve => db.countRewardsByParent(req.session.userId, (err, result) => resolve(result?.count || 0)))
+        ]).then(([childrenCount, tasksCount, rewardsCount]) => {
+            res.json({
+                isPremium: user.isPremium,
+                isTrialActive: user.isTrialActive,
+                subscriptionStatus: user.subscription_status,
+                subscriptionEndDate: user.subscription_end_date,
+                trialEndDate: user.trial_end_date,
+                usage: {
+                    children: childrenCount,
+                    tasks: tasksCount,
+                    rewards: rewardsCount
+                },
+                limits: FREEMIUM_LIMITS
+            });
+        });
+    });
+});
+
 // Children management
-app.post('/api/children', requireAuth, (req, res) => {
+app.post('/api/children', requireAuth, checkResourceLimit('children'), (req, res) => {
     const { name, age, avatar } = req.body;
     
     db.createChild(req.session.userId, name, age, avatar, function(err) {
@@ -203,7 +301,7 @@ app.put('/api/children/:id/avatar', requireAuth, (req, res) => {
 });
 
 // Task management
-app.post('/api/tasks', requireAuth, (req, res) => {
+app.post('/api/tasks', requireAuth, checkResourceLimit('tasks'), (req, res) => {
     const { childId, title, type, pointsValue, frequency } = req.body;
     
     db.createTask(req.session.userId, childId, title, type, pointsValue, frequency, function(err) {
@@ -562,7 +660,7 @@ app.get('/api/approval-stats', requireAuth, (req, res) => {
 });
 
 // User profile endpoints
-app.post('/api/upload-family-photo', requireAuth, upload.single('familyPhoto'), (req, res) => {
+app.post('/api/upload-family-photo', requireAuth, requirePremiumFeature, upload.single('familyPhoto'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -630,7 +728,7 @@ app.get('/api/reward-categories', requireAuth, (req, res) => {
 });
 
 // Rewards Management (Parent)
-app.post('/api/rewards', requireAuth, (req, res) => {
+app.post('/api/rewards', requireAuth, checkResourceLimit('rewards'), (req, res) => {
     const { categoryId, name, description, cost, type, stockQuantity, icon } = req.body;
     
     if (!categoryId || !name || !cost) {
@@ -894,7 +992,7 @@ app.get('/api/child-streak-calendar', requireChildAuth, (req, res) => {
 // Bills Management API Endpoints
 
 // Parent Bills Management
-app.post('/api/bills', requireAuth, (req, res) => {
+app.post('/api/bills', requireAuth, requirePremiumFeature, (req, res) => {
     console.log('Bills API called with data:', req.body);
     console.log('Session userId:', req.session.userId);
     
