@@ -19,6 +19,9 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "keywords": ["family", "tasks", "chores", "kids", "motivation"],
   "author": "Your Name",
   "license": "MIT"

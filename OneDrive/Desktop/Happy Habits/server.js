@@ -128,6 +128,11 @@ app.get('/', (req, res) => {
     }
 });
 
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Parent Authentication
 app.post('/api/register', (req, res) => {
     const { email, password, name } = req.body;
