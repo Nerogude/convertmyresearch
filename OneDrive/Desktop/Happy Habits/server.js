@@ -746,8 +746,7 @@ function requireAdmin(req, res, next) {
         }
         
         // Check if user is admin by email or user ID 1
-        // Replace 'your-email@example.com' with your actual email
-        const adminEmails = ['your-email@example.com', 'admin@example.com'];
+        const adminEmails = ['test@mail.com'];
         const isAdmin = user.id === 1 || adminEmails.includes(user.email.toLowerCase());
         
         if (isAdmin) {
@@ -758,8 +757,8 @@ function requireAdmin(req, res, next) {
     });
 }
 
-// Get signup statistics (temporarily open for testing)
-app.get('/api/signup-stats', requireAuth, (req, res) => {
+// Get signup statistics (admin only)
+app.get('/api/signup-stats', requireAuth, requireAdmin, (req, res) => {
     db.getUserSignupStats((err, stats) => {
         if (err) {
             return res.status(500).json({ error: 'Server error' });
