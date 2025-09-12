@@ -133,6 +133,22 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint to check current user info (temporary)
+app.get('/api/debug/me', requireAuth, (req, res) => {
+    db.getUserById(req.session.userId, (err, user) => {
+        if (err || !user) {
+            return res.status(500).json({ error: 'User not found' });
+        }
+        res.json({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            created_at: user.created_at,
+            isFirstUser: user.id === 1
+        });
+    });
+});
+
 // Parent Authentication
 app.post('/api/register', (req, res) => {
     const { email, password, name } = req.body;
@@ -723,12 +739,23 @@ app.get('/api/pending-count', requireAuth, (req, res) => {
 
 // Admin check middleware
 function requireAdmin(req, res, next) {
-    // Only user ID 1 (first registered user) can access analytics
-    if (req.session.userId === 1) {
-        next();
-    } else {
-        res.status(403).json({ error: 'Admin access required' });
-    }
+    // Get user info to check if they're admin
+    db.getUserById(req.session.userId, (err, user) => {
+        if (err || !user) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+        
+        // Check if user is admin by email or user ID 1
+        // Replace 'your-email@example.com' with your actual email
+        const adminEmails = ['your-email@example.com', 'admin@example.com'];
+        const isAdmin = user.id === 1 || adminEmails.includes(user.email.toLowerCase());
+        
+        if (isAdmin) {
+            next();
+        } else {
+            res.status(403).json({ error: 'Admin access required' });
+        }
+    });
 }
 
 // Get signup statistics (admin only)
