@@ -2345,13 +2345,9 @@ window.addEventListener('click', (e) => {
 async function loadAnalytics() {
     try {
         const response = await fetch('/api/signup-stats');
+        // Temporarily removed admin check for testing
         if (response.status === 403) {
-            // User is not admin - hide analytics section
-            const analyticsCard = document.querySelector('.card[style*="linear-gradient(135deg, #6c5ce7, #a29bfe)"]');
-            if (analyticsCard) {
-                analyticsCard.style.display = 'none';
-            }
-            return;
+            console.log('Analytics access denied');
         }
         const stats = await response.json();
         renderAnalytics(stats);
