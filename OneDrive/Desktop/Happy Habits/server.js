@@ -716,8 +716,18 @@ app.get('/api/pending-count', requireAuth, (req, res) => {
 
 // ==================== ANALYTICS API ====================
 
-// Get signup statistics
-app.get('/api/signup-stats', requireAuth, (req, res) => {
+// Admin check middleware
+function requireAdmin(req, res, next) {
+    // Only user ID 1 (first registered user) can access analytics
+    if (req.session.userId === 1) {
+        next();
+    } else {
+        res.status(403).json({ error: 'Admin access required' });
+    }
+}
+
+// Get signup statistics (admin only)
+app.get('/api/signup-stats', requireAuth, requireAdmin, (req, res) => {
     db.getUserSignupStats((err, stats) => {
         if (err) {
             return res.status(500).json({ error: 'Server error' });
@@ -726,8 +736,8 @@ app.get('/api/signup-stats', requireAuth, (req, res) => {
     });
 });
 
-// Get recent signups (for admin/developer view)
-app.get('/api/recent-signups', requireAuth, (req, res) => {
+// Get recent signups (admin only)
+app.get('/api/recent-signups', requireAuth, requireAdmin, (req, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
     db.getRecentSignups(limit, (err, signups) => {
         if (err) {

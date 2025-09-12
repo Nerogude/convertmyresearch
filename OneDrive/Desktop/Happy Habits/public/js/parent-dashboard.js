@@ -2345,15 +2345,23 @@ window.addEventListener('click', (e) => {
 async function loadAnalytics() {
     try {
         const response = await fetch('/api/signup-stats');
+        if (response.status === 403) {
+            // User is not admin - hide analytics section
+            const analyticsCard = document.querySelector('.card[style*="linear-gradient(135deg, #6c5ce7, #a29bfe)"]');
+            if (analyticsCard) {
+                analyticsCard.style.display = 'none';
+            }
+            return;
+        }
         const stats = await response.json();
         renderAnalytics(stats);
     } catch (error) {
         console.error('Error loading analytics:', error);
-        document.getElementById('analytics-content').innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <p>Unable to load analytics data</p>
-            </div>
-        `;
+        // Hide analytics section on error
+        const analyticsCard = document.querySelector('.card[style*="linear-gradient(135deg, #6c5ce7, #a29bfe)"]');
+        if (analyticsCard) {
+            analyticsCard.style.display = 'none';
+        }
     }
 }
 
