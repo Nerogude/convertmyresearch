@@ -1,0 +1,19 @@
+{
+  "name": "care-worker-training",
+  "version": "1.0.0",
+  "description": "Care Worker Training Simulator - Full Stack Application",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "cd server && npm start",
+    "build": "cd server && npm install",
+    "dev": "cd server && npm run dev",
+    "postinstall": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "keywords": ["care-worker", "training", "healthcare", "simulator"],
+  "author": "nerogude",
+  "license": "ISC"
+}
