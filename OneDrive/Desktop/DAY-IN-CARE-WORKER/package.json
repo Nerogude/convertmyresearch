@@ -4,7 +4,7 @@
   "description": "Care Worker Training Simulator - Full Stack Application",
   "main": "server/server.js",
   "scripts": {
-    "start": "cd server && npm start",
+    "start": "cd server && npm install && npm start",
     "build": "cd server && npm install",
     "dev": "cd server && npm run dev",
     "postinstall": "cd server && npm install"
