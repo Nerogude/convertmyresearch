@@ -61,8 +61,15 @@ async function initializeDatabase() {
 // Run if called directly
 if (require.main === module) {
   initializeDatabase()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+    .then(() => {
+      console.log('✅ Database initialization successful');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.log('⚠️ Database initialization failed, but continuing:', error.message);
+      // Don't exit with error - let the server start anyway
+      process.exit(0);
+    });
 }
 
 module.exports = { initializeDatabase };

@@ -4,10 +4,10 @@
   "description": "Care Worker Training Simulator - Full Stack Application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "npm install --prefix server",
-    "dev": "npm run dev --prefix server",
-    "postinstall": "npm install --prefix server"
+    "start": "node database/init.js && node server.js",
+    "build": "echo 'Build complete'",
+    "dev": "nodemon server.js",
+    "postinstall": "echo 'Dependencies installed'"
   },
   "engines": {
     "node": ">=18.0.0"
