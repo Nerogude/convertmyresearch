@@ -56,8 +56,9 @@ CREATE TABLE refresh_tokens (
 
 -- Insert sample data
 INSERT INTO organizations (name, address, phone, email, org_code, license_type) VALUES
-('Sunshine Care Home', '123 Care Street, London', '020 1234 5678', 'admin@sunshinecare.co.uk', 'SUNSHINE', 'trial'),
-('Meadow View Care', '456 Meadow Road, Manchester', '0161 234 5678', 'info@meadowview.co.uk', 'MEADOW', 'full');
+('Sunshine Care Home', '123 Care Street, London', '020 1234 5678', 'admin@sunshinecare.co.uk', 'SUNSHI', 'trial'),
+('Meadow View Care', '456 Meadow Road, Manchester', '0161 234 5678', 'info@meadowview.co.uk', 'MEADOW', 'full'),
+('Demo Care Home', '789 Demo Street, Birmingham', '0121 123 4567', 'demo@democare.co.uk', 'DEMO01', 'trial');
 
 -- Sample users
 INSERT INTO users (email, password_hash, first_name, last_name, role, organization_id) VALUES
