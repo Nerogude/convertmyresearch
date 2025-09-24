@@ -1,9 +1,95 @@
 // Main application logic
 document.addEventListener('DOMContentLoaded', function() {
-    loadScenarios();
-    updateLicenseStatus();
-    setupEventListeners();
+    checkAuthentication();
 });
+
+// Authentication check
+async function checkAuthentication() {
+    const token = localStorage.getItem('accessToken');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!token || !user.id) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login.html';
+        return;
+    }
+
+    try {
+        // Verify token is still valid
+        const response = await fetch('/api/user', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Token invalid');
+        }
+
+        const userData = await response.json();
+
+        // Update user info in the header
+        updateUserInterface(userData.user);
+
+        // Initialize the application
+        loadScenarios();
+        updateLicenseStatus();
+        setupEventListeners();
+        setupLogoutHandler();
+    } catch (error) {
+        // Token expired or invalid, redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    }
+}
+
+// Update user interface with user data
+function updateUserInterface(user) {
+    const userInfo = document.getElementById('user-info');
+    if (userInfo) {
+        userInfo.innerHTML = `
+            <span>${user.firstName} ${user.lastName} (${user.role})</span>
+            <button id="logout-btn" style="margin-left: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">Logout</button>
+        `;
+    }
+
+    // Update license status based on user's organization
+    if (licenseStatus) {
+        licenseStatus.isTrialMode = user.licenseType === 'trial';
+        licenseStatus.scenariosUnlocked = user.licenseType === 'trial' ? 2 : 22;
+    }
+}
+
+// Setup logout handler
+function setupLogoutHandler() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                const refreshToken = localStorage.getItem('refreshToken');
+
+                // Call logout endpoint
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refreshToken })
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                // Clear local storage and redirect
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            }
+        });
+    }
+}
 
 function setupEventListeners() {
     // Main upgrade button

@@ -5,6 +5,11 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
 
+// Import routes and middleware
+const authRoutes = require('./routes/auth');
+const { authenticateToken, requireRole } = require('./middleware/auth');
+const { createConnection } = require('./database/db');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -32,6 +37,27 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Initialize database connection
+createConnection().catch(console.error);
+
+// Authentication routes (public)
+app.use('/api/auth', authRoutes);
+
+// Public routes
+app.get('/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/register.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+// Redirect root to login if not authenticated
+app.get('/', (req, res) => {
+  // For now, serve the main app directly since we don't have session checking on static files
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Basic route for testing
 app.get('/api/health', (req, res) => {
   res.json({
@@ -41,9 +67,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve the main application
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Protected API endpoints
+app.get('/api/user', authenticateToken, (req, res) => {
+  res.json({
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      firstName: req.user.first_name,
+      lastName: req.user.last_name,
+      role: req.user.role,
+      organization: req.user.organization_name,
+      licenseType: req.user.license_type
+    }
+  });
 });
 
 // API endpoints
@@ -53,7 +89,9 @@ app.get('/api/info', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
-      info: '/api/info'
+      info: '/api/info',
+      auth: '/api/auth/*',
+      user: '/api/user'
     }
   });
 });
