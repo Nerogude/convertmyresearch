@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care Worker Training Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .license-banner {
+            background: #f8f9fa;
+            border-left: 4px solid #ffc107;
+            padding: 10px 20px;
+            margin: 0;
+            font-size: 14px;
+            color: #856404;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .welcome {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .welcome h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .scenario-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .scenario-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .scenario-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .scenario-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .scenario-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .trial-badge {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .locked-badge {
+            background: #dc3545;
+            color: white;
+        }
+
+        .start-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🏥 Care Worker Training</div>
+        <div>
+            <span id="user-info">Manager Dashboard</span>
+        </div>
+    </div>
+
+    <div class="license-banner">
+        <span id="license-status">Trial Mode: 2 of 22 scenarios available</span>
+        <button class="upgrade-btn" id="main-upgrade-btn">Unlock All Scenarios - £299</button>
+    </div>
+
+    <div class="container">
+        <div class="welcome">
+            <h1>Welcome to Care Worker Training Platform</h1>
+            <p>Professional training scenarios for care workers. Build skills, ensure compliance, and improve care quality.</p>
+        </div>
+
+        <div class="scenarios-grid" id="scenarios-grid">
+            <!-- Scenarios will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Upgrade Modal -->
+    <div id="upgrade-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-upgrade-modal">&times;</span>
+            <h2>🔓 Unlock All Training Scenarios</h2>
+            <p>Get access to all 22 professional care worker training scenarios</p>
+            <div style="margin: 20px 0;">
+                <h3>✅ What's Currently Included:</h3>
+                <ul style="text-align: left; margin: 10px 0;">
+                    <li>22 Professional Scenario Frameworks</li>
+                    <li>Comprehensive Training Content</li>
+                    <li>Manager Dashboard Access</li>
+                    <li>Unlimited Staff Accounts</li>
+                    <li>Platform Foundation</li>
+                </ul>
+                <h3 style="margin-top: 15px;">🚀 Development Roadmap:</h3>
+                <ul style="text-align: left; margin: 10px 0; color: #666;">
+                    <li>Interactive Training Modules</li>
+                    <li>Progress Tracking & Certificates</li>
+                    <li>Advanced Analytics</li>
+                    <li>Video Content Integration</li>
+                </ul>
+            </div>
+            <div style="font-size: 24px; font-weight: bold; color: #28a745; margin: 20px 0;">
+                One-time payment: £299
+            </div>
+            <button class="upgrade-btn" id="purchase-now-btn" style="padding: 15px 30px; font-size: 16px;">
+                Purchase Now
+            </button>
+        </div>
+    </div>
+
+    <script src="scenarios.js"></script>
+    <script src="scenario-content.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
