@@ -13,7 +13,7 @@ const registerSchema = Joi.object({
   password: Joi.string().min(6).required(),
   firstName: Joi.string().min(2).required(),
   lastName: Joi.string().min(2).required(),
-  orgCode: Joi.string().length(6).uppercase().required(),
+  orgCode: Joi.string().min(3).max(10).uppercase().required(),
   role: Joi.string().valid('manager', 'staff').default('staff')
 });
 
